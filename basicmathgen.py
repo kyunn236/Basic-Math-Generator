@@ -102,6 +102,9 @@ class ProblemSet():
     def _generateAdditionProblem(self, base_range: tuple[int, int], addend_range: tuple[int, int]):
         return (random.randint(*base_range), random.randint(*addend_range))
 
+    def _generateMultiplyProblem(self, multiplier_range: tuple[int, int], multiplicand_range: tuple[int, int]):
+        return (random.randint(*multiplier_range), random.randint(*multiplicand_range))
+
     def generateProblemSet(self, prob_type: str = 'add', num_prob: int = 20, num1_range: tuple[int, int] = None, num2_range: tuple[int, int] = None):
         if num1_range is None or num2_range is None:
             raise ValueError("number range is required!")
@@ -115,24 +118,20 @@ class ProblemSet():
             for i in range(num_prob):
                 prob = self._generateSubtractProblem(num1_range, num2_range)
                 self._drawSubtractProblem(*prob)
-        # elif prob_type == 'multiply':
-        #     for i in rnage(num_prob):
-                # prob = self._generateMultiplyProblem
+        elif prob_type == 'multiply':
+            for i in range(num_prob):
+                prob = self._generateMultiplyProblem(num1_range, num2_range)
         else:
             raise NotImplementedError(
                 f"Problem type [{prob_type}] not implemented yet")
 
 
-def form(path):
+def generate(path):
     my_canvas = canvas.Canvas(path)
     probset = ProblemSet(my_canvas, font_size=18)
     probset.generateProblemSet('subtract', 50, (10, 9999), (10, 999))
     probset.save()
-    # my_canvas.rect(30, 200, 10, 40)
-    # my_canvas.setStrokeColor(colors.red)
-    # my_canvas.arc(30, 200, 40, 240, extent=90)
-    # my_canvas.save()
 
 
 if __name__ == '__main__':
-    form('canvas_form.pdf')
+    generate('problemset.pdf')
