@@ -1,0 +1,7 @@
+attrs==18.2.0
+autopep8==1.6.0
+ordered-set==4.1.0
+Pillow==9.1.1
+pycodestyle==2.8.0
+reportlab==3.6.10
+toml==0.10.2
