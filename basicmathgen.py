@@ -52,6 +52,20 @@ class ProblemSet():
                             self.next_idx+self.largest_prob_width, self.next_idy-self.font_size-4)
         self._goNextProb(self.largest_prob_width)
 
+    def _drawMultiplicationProblem(self, num1: int, num2: int):
+        num1_width = len(str(num1)) * self.fontwidth
+        num2_width = len(str(num2)) * self.fontwidth
+        num1_idx = self.next_idx + (self.largest_prob_width - num1_width)
+        num2_idx = self.next_idx + (self.largest_prob_width - num2_width)
+        self.my_canvas.drawString(num1_idx, self.next_idy, str(num1))
+        self.my_canvas.drawString(
+            num2_idx, self.next_idy-self.font_size, str(num2))
+        self.my_canvas.drawString(
+            self.next_idx, self.next_idy-self.font_size, 'x')
+        self.my_canvas.line(self.next_idx, self.next_idy-self.font_size-4,
+                            self.next_idx+self.largest_prob_width, self.next_idy-self.font_size-4)
+        self._goNextProb(self.largest_prob_width)
+
     def _setCanvasState(self):
         self.my_canvas.setLineWidth(1)
         self.my_canvas.setFont('Courier', self.font_size)
@@ -73,11 +87,15 @@ class ProblemSet():
     def save(self):
         self.my_canvas.save()
 
-    def _setProblemDimension(self, num1_range, num2_range):
+    def _setProblemDimension(self, num1_range, num2_range, prob_type: str = "add"):
         longest = max(len(str(num1_range[0])), len(str(num1_range[1])), len(
             str(num2_range[0])), len(str(num2_range[1])))
         self.largest_prob_width = (longest+2) * self.fontwidth
         self.problem_height = self.font_size * PROBLEM_HEIGHT_TO_FONT_SIZE
+        if prob_type == "multiply":
+            # additional room for larger multiplicand range
+            self.problem_height += self.font_size * \
+                (len(str(num2_range[1])) - 2)
 
     def _setInitialStart(self):
         if self.largest_prob_width <= 0:
@@ -108,7 +126,7 @@ class ProblemSet():
     def generateProblemSet(self, prob_type: str = 'add', num_prob: int = 20, num1_range: tuple[int, int] = None, num2_range: tuple[int, int] = None):
         if num1_range is None or num2_range is None:
             raise ValueError("number range is required!")
-        self._setProblemDimension(num1_range, num2_range)
+        self._setProblemDimension(num1_range, num2_range, prob_type)
         self._setInitialStart()
         if prob_type == 'add':
             for i in range(num_prob):
@@ -121,6 +139,7 @@ class ProblemSet():
         elif prob_type == 'multiply':
             for i in range(num_prob):
                 prob = self._generateMultiplyProblem(num1_range, num2_range)
+                self._drawMultiplicationProblem(*prob)
         else:
             raise NotImplementedError(
                 f"Problem type [{prob_type}] not implemented yet")
@@ -129,7 +148,7 @@ class ProblemSet():
 def generate(path):
     my_canvas = canvas.Canvas(path)
     probset = ProblemSet(my_canvas, font_size=18)
-    probset.generateProblemSet('subtract', 50, (10, 9999), (10, 999))
+    probset.generateProblemSet('multiply', 50, (10, 9999), (10, 999))
     probset.save()
 
 
