@@ -17,6 +17,7 @@ class ProblemSet():
     font_size = 16
     largest_prob_width = 0
     problem_height = 0
+    new_page_before_draw = False
 
     def __init__(self, canvas: canvas, font_size: int = 16):
         # default canvas A4 size if 612 wide by 792 long
@@ -25,6 +26,10 @@ class ProblemSet():
         self._setCanvasState()
 
     def _drawSubtractProblem(self, num1: int, num2: int):
+        if self.new_page_before_draw:
+            self.my_canvas.showPage()
+            self._setCanvasState()
+            self.new_page_before_draw = False
         num1_width = len(str(num1)) * self.fontwidth
         num2_width = len(str(num2)) * self.fontwidth
         num1_idx = self.next_idx + (self.largest_prob_width - num1_width)
@@ -39,6 +44,10 @@ class ProblemSet():
         self._goNextProb(self.largest_prob_width)
 
     def _drawAdditionProblem(self, num1: int, num2: int):
+        if self.new_page_before_draw:
+            self.my_canvas.showPage()
+            self._setCanvasState()
+            self.new_page_before_draw = False
         num1_width = len(str(num1)) * self.fontwidth
         num2_width = len(str(num2)) * self.fontwidth
         num1_idx = self.next_idx + (self.largest_prob_width - num1_width)
@@ -53,6 +62,10 @@ class ProblemSet():
         self._goNextProb(self.largest_prob_width)
 
     def _drawMultiplicationProblem(self, num1: int, num2: int):
+        if self.new_page_before_draw:
+            self.my_canvas.showPage()
+            self._setCanvasState()
+            self.new_page_before_draw = False
         num1_width = len(str(num1)) * self.fontwidth
         num2_width = len(str(num2)) * self.fontwidth
         num1_idx = self.next_idx + (self.largest_prob_width - num1_width)
@@ -79,8 +92,7 @@ class ProblemSet():
             self.next_idx = self.start_idx
             self.next_idy = self.next_idy - self.problem_height
         if(self.next_idy - self.problem_height < 0):
-            self.my_canvas.showPage()
-            self._setCanvasState()
+            self.new_page_before_draw = True
             self.next_idx = self.start_idx
             self.next_idy = self.start_idy
 
@@ -112,7 +124,12 @@ class ProblemSet():
     def _generateSubtractProblem(self, minuend_range: tuple[int, int], subtrahend_range: tuple[int, int], negative: bool = False):
         minuend = random.randint(*minuend_range)
         if not negative:
-            subtrahend = random.randint(subtrahend_range[0], minuend-1)
+            if minuend == subtrahend_range[0]:
+                subtrahend = minuend
+            elif minuend > subtrahend_range[1]:
+                subtrahend = random.randint(*subtrahend_range)
+            else:
+                subtrahend = random.randint(subtrahend_range[0], minuend-1)
         else:
             subtrahend = random.randint(*subtrahend_range)
         return (minuend, subtrahend)
@@ -123,7 +140,7 @@ class ProblemSet():
     def _generateMultiplyProblem(self, multiplier_range: tuple[int, int], multiplicand_range: tuple[int, int]):
         return (random.randint(*multiplier_range), random.randint(*multiplicand_range))
 
-    def generateProblemSet(self, prob_type: str = 'add', num_prob: int = 20, num1_range: tuple[int, int] = None, num2_range: tuple[int, int] = None):
+    def generateProblemSet(self, prob_type: str = 'add', num_prob: int = 20, sub_neg: bool = False, num1_range: tuple[int, int] = None, num2_range: tuple[int, int] = None):
         if num1_range is None or num2_range is None:
             raise ValueError("number range is required!")
         self._setProblemDimension(num1_range, num2_range, prob_type)
@@ -134,7 +151,8 @@ class ProblemSet():
                 self._drawAdditionProblem(*prob)
         elif prob_type == 'subtract':
             for i in range(num_prob):
-                prob = self._generateSubtractProblem(num1_range, num2_range)
+                prob = self._generateSubtractProblem(
+                    num1_range, num2_range, sub_neg)
                 self._drawSubtractProblem(*prob)
         elif prob_type == 'multiply':
             for i in range(num_prob):
